@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             /* Anthotea Creamy Light Theme */
@@ -1001,10 +1003,18 @@
     </div>
     
     <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://yqroyrpughvunoybdtvn.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlxcm95cnB1Z2h2dW5veWJkdHZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2ODE1MDQsImV4cCI6MjA4MzI1NzUwNH0.bhYAtLhU5KkWLKtN--v6vyriA5aZjQK6sR0LEHzoLOQ';
+        
+        // Initialize Supabase client
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
         // Data storage
-        let contacts = JSON.parse(localStorage.getItem('partnerContacts')) || [];
+        let contacts = [];
         let currentFilter = { status: null, type: 'all', search: '' };
         let editingId = null;
+        let isLoading = false;
         
         // Status config
         const statusConfig = {
@@ -1023,10 +1033,47 @@
             merchant: { label: 'Merchant', icon: '🏪' }
         };
         
-        // Initialize
-        function init() {
+        // Initialize - Load data from Supabase
+        async function init() {
+            await loadContacts();
             renderContacts();
             updateStats();
+        }
+        
+        // Load contacts from Supabase
+        async function loadContacts() {
+            isLoading = true;
+            try {
+                const { data, error } = await supabase
+                    .from('contacts')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    console.error('Error loading contacts:', error);
+                    alert('Failed to load contacts. Please refresh the page.');
+                    return;
+                }
+                
+                // Map database fields to JavaScript camelCase
+                contacts = data.map(c => ({
+                    id: c.id,
+                    name: c.name,
+                    contactPerson: c.contact_person,
+                    type: c.type,
+                    platform: c.platform,
+                    category: c.category,
+                    email: c.email,
+                    notes: c.notes,
+                    status: c.status,
+                    statusHistory: c.status_history || [],
+                    createdAt: c.created_at,
+                    updatedAt: c.updated_at
+                }));
+            } catch (err) {
+                console.error('Error:', err);
+            }
+            isLoading = false;
         }
         
         // Handle type change - toggle between Platform and Category
@@ -1273,8 +1320,8 @@
             openModal(id);
         }
         
-        // Save contact
-        function saveContact() {
+        // Save contact to Supabase
+        async function saveContact() {
             const name = document.getElementById('contactName').value.trim();
             const contactPerson = document.getElementById('contactPerson').value.trim();
             const type = document.getElementById('contactType').value;
@@ -1291,63 +1338,103 @@
                 return;
             }
             
-            if (id) {
-                // Edit existing contact
-                const index = contacts.findIndex(c => c.id === id);
-                if (index !== -1) {
-                    const oldStatus = contacts[index].status;
-                    const statusHistory = contacts[index].statusHistory || [];
+            // Disable save button during save
+            const saveBtn = document.querySelector('.btn-save');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+            
+            try {
+                if (id) {
+                    // Edit existing contact
+                    const existingContact = contacts.find(c => c.id === id);
+                    const oldStatus = existingContact ? existingContact.status : null;
+                    let statusHistory = existingContact ? (existingContact.statusHistory || []) : [];
                     
                     // Record status change if status changed
-                    if (oldStatus !== status) {
-                        statusHistory.push({
+                    if (oldStatus && oldStatus !== status) {
+                        statusHistory = [...statusHistory, {
                             from: oldStatus,
                             to: status,
                             date: now
-                        });
+                        }];
                     }
                     
-                    contacts[index] = {
-                        ...contacts[index],
-                        name, contactPerson, type, platform, category, email, notes, status,
-                        statusHistory,
-                        updatedAt: now
-                    };
-                }
-            } else {
-                // Add new contact with initial status history
-                contacts.push({
-                    id: 'contact_' + Date.now(),
-                    name, contactPerson, type, platform, category, email, notes, status,
-                    statusHistory: [{
+                    const { error } = await supabase
+                        .from('contacts')
+                        .update({
+                            name,
+                            contact_person: contactPerson,
+                            type,
+                            platform,
+                            category,
+                            email,
+                            notes,
+                            status,
+                            status_history: statusHistory,
+                            updated_at: now
+                        })
+                        .eq('id', id);
+                    
+                    if (error) throw error;
+                } else {
+                    // Add new contact
+                    const initialHistory = [{
                         from: null,
                         to: status,
                         date: now
-                    }],
-                    createdAt: now,
-                    updatedAt: now
-                });
-            }
-            
-            saveToStorage();
-            renderContacts();
-            updateStats();
-            closeModal();
-        }
-        
-        // Delete contact
-        function deleteContact(id) {
-            if (confirm('Are you sure you want to delete this contact?')) {
-                contacts = contacts.filter(c => c.id !== id);
-                saveToStorage();
+                    }];
+                    
+                    const { error } = await supabase
+                        .from('contacts')
+                        .insert({
+                            name,
+                            contact_person: contactPerson,
+                            type,
+                            platform,
+                            category,
+                            email,
+                            notes,
+                            status,
+                            status_history: initialHistory
+                        });
+                    
+                    if (error) throw error;
+                }
+                
+                // Reload contacts from database
+                await loadContacts();
                 renderContacts();
                 updateStats();
+                closeModal();
+            } catch (err) {
+                console.error('Error saving contact:', err);
+                alert('Failed to save contact. Please try again.');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save';
             }
         }
         
-        // Local storage
-        function saveToStorage() {
-            localStorage.setItem('partnerContacts', JSON.stringify(contacts));
+        // Delete contact from Supabase
+        async function deleteContact(id) {
+            if (confirm('Are you sure you want to delete this contact?')) {
+                try {
+                    const { error } = await supabase
+                        .from('contacts')
+                        .delete()
+                        .eq('id', id);
+                    
+                    if (error) throw error;
+                    
+                    // Reload contacts from database
+                    await loadContacts();
+                    renderContacts();
+                    updateStats();
+                } catch (err) {
+                    console.error('Error deleting contact:', err);
+                    alert('Failed to delete contact. Please try again.');
+                }
+            }
         }
         
         // Utility: escape HTML
