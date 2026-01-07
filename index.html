@@ -1008,7 +1008,7 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlxcm95cnB1Z2h2dW5veWJkdHZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2ODE1MDQsImV4cCI6MjA4MzI1NzUwNH0.bhYAtLhU5KkWLKtN--v6vyriA5aZjQK6sR0LEHzoLOQ';
         
         // Initialize Supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // Data storage
         let contacts = [];
@@ -1044,7 +1044,7 @@
         async function loadContacts() {
             isLoading = true;
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('contacts')
                     .select('*')
                     .order('created_at', { ascending: false });
@@ -1359,7 +1359,7 @@
                         }];
                     }
                     
-                    const { error } = await supabase
+                    const { error } = await supabaseClient
                         .from('contacts')
                         .update({
                             name,
@@ -1384,7 +1384,7 @@
                         date: now
                     }];
                     
-                    const { error } = await supabase
+                    const { error } = await supabaseClient
                         .from('contacts')
                         .insert({
                             name,
@@ -1419,7 +1419,7 @@
         async function deleteContact(id) {
             if (confirm('Are you sure you want to delete this contact?')) {
                 try {
-                    const { error } = await supabase
+                    const { error } = await supabaseClient
                         .from('contacts')
                         .delete()
                         .eq('id', id);
