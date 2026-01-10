@@ -242,6 +242,33 @@
             gap: 0.5rem;
         }
         
+        .filter-dropdowns {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .filter-select {
+            padding: 0.75rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        
+        .filter-select:hover {
+            border-color: var(--border-hover);
+        }
+        
         .filter-btn {
             padding: 0.75rem 1.25rem;
             background: var(--bg-input);
@@ -868,6 +895,16 @@
                 <button class="filter-btn" data-type="influencer" onclick="filterByType('influencer')">Influencer</button>
                 <button class="filter-btn" data-type="merchant" onclick="filterByType('merchant')">Merchant</button>
             </div>
+            <div class="filter-dropdowns">
+                <select id="countryFilter" class="filter-select" onchange="handleFilterChange()">
+                    <option value="">🌎 All Countries</option>
+                    <option value="USA">🇺🇸 USA</option>
+                    <option value="Canada">🇨🇦 Canada</option>
+                </select>
+                <select id="cityFilter" class="filter-select" onchange="handleFilterChange()">
+                    <option value="">🏙️ All Cities</option>
+                </select>
+            </div>
         </div>
         
         <!-- Contacts Grid -->
@@ -1027,7 +1064,7 @@
         
         // Data storage
         let contacts = [];
-        let currentFilter = { status: null, type: 'all', search: '' };
+        let currentFilter = { status: null, type: 'all', search: '', country: '', city: '' };
         let editingId = null;
         let isLoading = false;
         
@@ -1051,6 +1088,7 @@
         // Initialize - Load data from Supabase
         async function init() {
             await loadContacts();
+            updateCityFilter();
             renderContacts();
             updateStats();
         }
@@ -1118,6 +1156,10 @@
                 if (currentFilter.status && c.status !== currentFilter.status) return false;
                 // Type filter
                 if (currentFilter.type !== 'all' && c.type !== currentFilter.type) return false;
+                // Country filter
+                if (currentFilter.country && c.country !== currentFilter.country) return false;
+                // City filter
+                if (currentFilter.city && c.city !== currentFilter.city) return false;
                 // Search filter
                 if (currentFilter.search) {
                     const search = currentFilter.search.toLowerCase();
@@ -1125,7 +1167,9 @@
                            (c.email && c.email.toLowerCase().includes(search)) ||
                            (c.platform && c.platform.toLowerCase().includes(search)) ||
                            (c.category && c.category.toLowerCase().includes(search)) ||
-                           (c.contactPerson && c.contactPerson.toLowerCase().includes(search));
+                           (c.contactPerson && c.contactPerson.toLowerCase().includes(search)) ||
+                           (c.city && c.city.toLowerCase().includes(search)) ||
+                           (c.country && c.country.toLowerCase().includes(search));
                 }
                 return true;
             });
@@ -1295,6 +1339,40 @@
         function handleSearch() {
             currentFilter.search = document.getElementById('searchInput').value;
             renderContacts();
+        }
+        
+        // Handle country/city filter change
+        function handleFilterChange() {
+            currentFilter.country = document.getElementById('countryFilter').value;
+            currentFilter.city = document.getElementById('cityFilter').value;
+            updateCityFilter();
+            renderContacts();
+        }
+        
+        // Update city dropdown based on available cities
+        function updateCityFilter() {
+            const citySelect = document.getElementById('cityFilter');
+            const selectedCity = citySelect.value;
+            
+            // Get unique cities from contacts, optionally filtered by country
+            let filteredContacts = contacts;
+            if (currentFilter.country) {
+                filteredContacts = contacts.filter(c => c.country === currentFilter.country);
+            }
+            
+            const cities = [...new Set(filteredContacts
+                .map(c => c.city)
+                .filter(Boolean)
+            )].sort();
+            
+            citySelect.innerHTML = '<option value="">🏙️ All Cities</option>';
+            cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                if (city === selectedCity) option.selected = true;
+                citySelect.appendChild(option);
+            });
         }
         
         // Modal operations
