@@ -958,6 +958,21 @@
                         </div>
                     </div>
                     
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Country</label>
+                            <select id="contactCountry">
+                                <option value="">Select country...</option>
+                                <option value="USA">🇺🇸 USA</option>
+                                <option value="Canada">🇨🇦 Canada</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="contactCity" placeholder="Enter city">
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
                         <label>Email</label>
                         <input type="email" id="contactEmail" placeholder="email@example.com">
@@ -1063,6 +1078,8 @@
                     type: c.type,
                     platform: c.platform,
                     category: c.category,
+                    country: c.country,
+                    city: c.city,
                     email: c.email,
                     notes: c.notes,
                     status: c.status,
@@ -1183,6 +1200,15 @@
                                 ${escapeHtml(contact.email)}
                             </div>
                         ` : ''}
+                        ${(contact.city || contact.country) ? `
+                            <div class="detail-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
+                                ${escapeHtml([contact.city, contact.country].filter(Boolean).join(', '))}
+                            </div>
+                        ` : ''}
                         ${contact.type === 'influencer' && contact.platform ? `
                             <div class="detail-item">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1287,6 +1313,8 @@
                     document.getElementById('contactType').value = contact.type;
                     document.getElementById('contactPlatform').value = contact.platform || '';
                     document.getElementById('contactCategory').value = contact.category || '';
+                    document.getElementById('contactCountry').value = contact.country || '';
+                    document.getElementById('contactCity').value = contact.city || '';
                     document.getElementById('contactEmail').value = contact.email || '';
                     document.getElementById('contactNotes').value = contact.notes || '';
                     document.querySelector(`input[name="status"][value="${contact.status}"]`).checked = true;
@@ -1327,6 +1355,8 @@
             const type = document.getElementById('contactType').value;
             const platform = type === 'influencer' ? document.getElementById('contactPlatform').value : '';
             const category = type === 'merchant' ? document.getElementById('contactCategory').value : '';
+            const country = document.getElementById('contactCountry').value;
+            const city = document.getElementById('contactCity').value.trim();
             const email = document.getElementById('contactEmail').value.trim();
             const notes = document.getElementById('contactNotes').value.trim();
             const status = document.querySelector('input[name="status"]:checked').value;
@@ -1367,6 +1397,8 @@
                             type,
                             platform,
                             category,
+                            country,
+                            city,
                             email,
                             notes,
                             status,
@@ -1392,6 +1424,8 @@
                             type,
                             platform,
                             category,
+                            country,
+                            city,
                             email,
                             notes,
                             status,
