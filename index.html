@@ -29,12 +29,13 @@
             --accent-light: #D4C4A8;      /* Light caramel */
             --accent-glow: rgba(181, 158, 122, 0.15);
             
-            /* Status colors - Coordinated with cream theme */
-            --status-email: #C4956A;      /* Warm orange brown */
-            --status-sample: #7BA08C;     /* Herbal green */
-            --status-negotiate: #9B8BB0;  /* Lavender purple */
-            --status-partner: #B5838D;    /* Rose pink brown */
-            --status-declined: #8B8B8B;   /* Muted grey */
+            /* Status colors - Custom theme */
+            --status-email: #C4956A;      /* Warm orange brown - keep original */
+            --status-interested: #A2AD91; /* Sage green */
+            --status-sample: #A2AD91;     /* Sage green */
+            --status-negotiate: #A2AD91;  /* Sage green */
+            --status-partner: #A2AD91;    /* Sage green */
+            --status-declined: #A52A2A;   /* Deep red */
             
             --radius-sm: 8px;
             --radius-md: 12px;
@@ -176,10 +177,11 @@
         }
         
         .stat-icon.email { background: rgba(196, 149, 106, 0.12); }
-        .stat-icon.sample { background: rgba(123, 160, 140, 0.12); }
-        .stat-icon.negotiate { background: rgba(155, 139, 176, 0.12); }
-        .stat-icon.partner { background: rgba(181, 131, 141, 0.12); }
-        .stat-icon.declined { background: rgba(139, 139, 139, 0.12); }
+        .stat-icon.interested { background: rgba(162, 173, 145, 0.12); }
+        .stat-icon.sample { background: rgba(162, 173, 145, 0.12); }
+        .stat-icon.negotiate { background: rgba(162, 173, 145, 0.12); }
+        .stat-icon.partner { background: rgba(162, 173, 145, 0.12); }
+        .stat-icon.declined { background: rgba(165, 42, 42, 0.12); }
         
         .stat-info h3 {
             font-size: 1.5rem;
@@ -545,23 +547,28 @@
             color: var(--status-email);
         }
         
+        .status-badge.interested {
+            background: rgba(162, 173, 145, 0.12);
+            color: var(--status-interested);
+        }
+        
         .status-badge.sample {
-            background: rgba(123, 160, 140, 0.12);
+            background: rgba(162, 173, 145, 0.12);
             color: var(--status-sample);
         }
         
         .status-badge.negotiate {
-            background: rgba(155, 139, 176, 0.12);
+            background: rgba(162, 173, 145, 0.12);
             color: var(--status-negotiate);
         }
         
         .status-badge.partner {
-            background: rgba(181, 131, 141, 0.12);
+            background: rgba(162, 173, 145, 0.12);
             color: var(--status-partner);
         }
         
         .status-badge.declined {
-            background: rgba(139, 139, 139, 0.12);
+            background: rgba(165, 42, 42, 0.12);
             color: var(--status-declined);
         }
         
@@ -851,6 +858,13 @@
                     <p>Email Outreach</p>
                 </div>
             </div>
+            <div class="stat-card" data-filter="interested" onclick="filterByStatus('interested')">
+                <div class="stat-icon interested">💚</div>
+                <div class="stat-info">
+                    <h3 id="count-interested">0</h3>
+                    <p>Interested</p>
+                </div>
+            </div>
             <div class="stat-card" data-filter="sample" onclick="filterByStatus('sample')">
                 <div class="stat-icon sample">📦</div>
                 <div class="stat-info">
@@ -1023,6 +1037,10 @@
                                 <label for="status-email"><span>📧</span> Email Outreach</label>
                             </div>
                             <div class="status-option">
+                                <input type="radio" name="status" id="status-interested" value="interested">
+                                <label for="status-interested"><span>💚</span> Interested</label>
+                            </div>
+                            <div class="status-option">
                                 <input type="radio" name="status" id="status-sample" value="sample">
                                 <label for="status-sample"><span>📦</span> Sample Sent</label>
                             </div>
@@ -1071,14 +1089,15 @@
         // Status config
         const statusConfig = {
             email: { label: 'Email Outreach', icon: '📧', order: 1 },
-            sample: { label: 'Sample Sent', icon: '📦', order: 2 },
-            negotiate: { label: 'Negotiating', icon: '💬', order: 3 },
-            partner: { label: 'Partnered', icon: '✨', order: 4 },
+            interested: { label: 'Interested', icon: '💚', order: 2 },
+            sample: { label: 'Sample Sent', icon: '📦', order: 3 },
+            negotiate: { label: 'Negotiating', icon: '💬', order: 4 },
+            partner: { label: 'Partnered', icon: '✨', order: 5 },
             declined: { label: 'Declined', icon: '🚫', order: 0 }  // order 0 = end state, not in progress
         };
         
         // Progress statuses (exclude declined for progress bar)
-        const progressStatuses = ['email', 'sample', 'negotiate', 'partner'];
+        const progressStatuses = ['email', 'interested', 'sample', 'negotiate', 'partner'];
         
         const typeConfig = {
             influencer: { label: 'Influencer', icon: '🎬' },
@@ -1305,6 +1324,7 @@
         // Update stats
         function updateStats() {
             document.getElementById('count-email').textContent = contacts.filter(c => c.status === 'email').length;
+            document.getElementById('count-interested').textContent = contacts.filter(c => c.status === 'interested').length;
             document.getElementById('count-sample').textContent = contacts.filter(c => c.status === 'sample').length;
             document.getElementById('count-negotiate').textContent = contacts.filter(c => c.status === 'negotiate').length;
             document.getElementById('count-partner').textContent = contacts.filter(c => c.status === 'partner').length;
