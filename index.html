@@ -324,10 +324,41 @@
         }
         
         .contact-card:hover {
-            background: var(--bg-card-hover);
             border-color: var(--border-hover);
             box-shadow: var(--shadow-hover);
             transform: translateY(-4px);
+        }
+        
+        /* Card background colors based on status */
+        .contact-card.card-status-email {
+            background: var(--bg-card);
+        }
+        .contact-card.card-status-email:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        .contact-card.card-status-interested,
+        .contact-card.card-status-sample,
+        .contact-card.card-status-negotiate,
+        .contact-card.card-status-partner {
+            background: rgba(162, 173, 145, 0.25);
+            border-color: rgba(162, 173, 145, 0.4);
+        }
+        .contact-card.card-status-interested:hover,
+        .contact-card.card-status-sample:hover,
+        .contact-card.card-status-negotiate:hover,
+        .contact-card.card-status-partner:hover {
+            background: rgba(162, 173, 145, 0.35);
+            border-color: rgba(162, 173, 145, 0.5);
+        }
+        
+        .contact-card.card-status-declined {
+            background: rgba(165, 42, 42, 0.15);
+            border-color: rgba(165, 42, 42, 0.3);
+        }
+        .contact-card.card-status-declined:hover {
+            background: rgba(165, 42, 42, 0.22);
+            border-color: rgba(165, 42, 42, 0.4);
         }
         
         .contact-header {
@@ -1205,7 +1236,7 @@
             emptyState.style.display = 'none';
             
             grid.innerHTML = filtered.map((contact, index) => `
-                <div class="contact-card" style="animation-delay: ${index * 0.05}s">
+                <div class="contact-card card-status-${contact.status}" style="animation-delay: ${index * 0.05}s">
                     <div class="contact-header">
                         <div class="contact-info">
                             <h3 class="contact-name">${escapeHtml(contact.name)}</h3>
