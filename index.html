@@ -156,7 +156,6 @@
         }
         
         .stat-card:hover {
-            background: var(--bg-card-hover);
             border-color: var(--border-hover);
             box-shadow: var(--shadow-hover);
         }
@@ -164,6 +163,45 @@
         .stat-card.active {
             border-color: var(--accent-primary);
             box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        
+        /* Stat card background colors */
+        .stat-card[data-filter="email"] {
+            background: var(--bg-card);
+        }
+        .stat-card[data-filter="email"]:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        .stat-card[data-filter="interested"],
+        .stat-card[data-filter="sample"],
+        .stat-card[data-filter="negotiate"] {
+            background: rgba(246, 206, 74, 0.25);
+            border-color: rgba(246, 206, 74, 0.4);
+        }
+        .stat-card[data-filter="interested"]:hover,
+        .stat-card[data-filter="sample"]:hover,
+        .stat-card[data-filter="negotiate"]:hover {
+            background: rgba(246, 206, 74, 0.35);
+            border-color: rgba(246, 206, 74, 0.5);
+        }
+        
+        .stat-card[data-filter="partner"] {
+            background: rgba(56, 116, 26, 0.2);
+            border-color: rgba(56, 116, 26, 0.35);
+        }
+        .stat-card[data-filter="partner"]:hover {
+            background: rgba(56, 116, 26, 0.28);
+            border-color: rgba(56, 116, 26, 0.45);
+        }
+        
+        .stat-card[data-filter="declined"] {
+            background: rgba(165, 42, 42, 0.15);
+            border-color: rgba(165, 42, 42, 0.3);
+        }
+        .stat-card[data-filter="declined"]:hover {
+            background: rgba(165, 42, 42, 0.22);
+            border-color: rgba(165, 42, 42, 0.4);
         }
         
         .stat-icon {
